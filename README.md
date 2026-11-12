@@ -1,12 +1,8 @@
 # Sistema de Gestão Agrícola
 
-Sistema de gestão agrícola desenvolvido como projeto de estudo e portfólio, com foco na aplicação de conceitos de desenvolvimento de software, programação orientada a objetos, APIs REST e persistência de dados.
+API REST para gerenciamento de propriedades rurais, talhões, culturas agrícolas e plantios, desenvolvida com Java 21, Spring Boot e MySQL.
 
-## Objetivo
-
-O projeto tem como objetivo desenvolver uma aplicação para auxiliar no gerenciamento de informações relacionadas às atividades agrícolas.
-
-A aplicação será construída de forma incremental, permitindo a implementação e validação das funcionalidades em diferentes etapas.
+O projeto foi criado com finalidade educacional e de portfólio, aplicando conceitos de programação orientada a objetos, arquitetura em camadas, persistência de dados e implementação de regras de negócio.
 
 ## Tecnologias utilizadas
 
@@ -19,31 +15,73 @@ A aplicação será construída de forma incremental, permitindo a implementaç�
 - Maven
 - Git e GitHub
 
-## Estado atual
+## Funcionalidades implementadas
 
-**Em desenvolvimento — configuração inicial do backend.**
+### Propriedades rurais
 
-A estrutura inicial do projeto foi criada, incluindo:
+- Cadastro, listagem, consulta, atualização e exclusão.
+- Validação de nome, município e área total.
+- Impedimento de redução da área total abaixo da soma das áreas dos talhões.
+- Proteção contra exclusão de propriedades com talhões vinculados.
 
-- Configuração do Spring Boot.
-- Configuração da conexão com o MySQL.
-- Criação de usuário específico para acesso ao banco de dados.
-- Configuração inicial do JPA e Hibernate.
-- Inicialização do versionamento com Git.
+### Talhões
 
-As funcionalidades de negócio e os endpoints REST ainda serão implementados.
+- Cadastro e gerenciamento de talhões vinculados a propriedades rurais.
+- Validação de nome, área e propriedade.
+- Controle da soma das áreas dos talhões em relação à área da propriedade.
+- Impedimento de redução da área abaixo da área de plantios vinculados.
+- Proteção contra exclusão de talhões com plantios.
 
-## Funcionalidades planejadas
+### Culturas agrícolas
 
-- Cadastro e gerenciamento de propriedades agrícolas.
-- Cadastro de culturas agrícolas.
-- Gerenciamento de safras.
-- Registro de atividades agrícolas.
-- Consultas e relatórios de informações cadastradas.
+- Cadastro, listagem, consulta, atualização e exclusão.
+- Validação de nome obrigatório e único.
+- Proteção contra exclusão de culturas utilizadas em plantios.
 
-As funcionalidades poderão ser ajustadas durante a evolução do projeto.
+### Plantios
 
-## Configuração do ambiente
+- Cadastro e gerenciamento de plantios vinculados a talhões e culturas.
+- Registro de área plantada, data prevista, data realizada e status.
+- Status disponíveis: `PLANEJADO`, `REALIZADO` e `CANCELADO`.
+- Validação da área plantada em relação à área do talhão.
+- Validação de consistência entre status e data realizada.
+- Impedimento de dois plantios planejados simultaneamente no mesmo talhão.
+
+## Arquitetura
+
+O backend utiliza uma arquitetura organizada em camadas:
+
+- **Controller:** recebe requisições HTTP e retorna respostas da API.
+- **Service:** implementa as regras de negócio e validações.
+- **Repository:** realiza o acesso aos dados por meio do Spring Data JPA.
+- **Entity:** representa as entidades persistidas no banco de dados.
+
+## Endpoints REST
+
+| Método | Endpoint             | Descrição             |
+| ------ | -------------------- | --------------------- |
+| GET    | `/propriedades`      | Listar propriedades   |
+| GET    | `/propriedades/{id}` | Consultar propriedade |
+| POST   | `/propriedades`      | Cadastrar propriedade |
+| PUT    | `/propriedades/{id}` | Atualizar propriedade |
+| DELETE | `/propriedades/{id}` | Excluir propriedade   |
+| GET    | `/talhoes`           | Listar talhões        |
+| GET    | `/talhoes/{id}`      | Consultar talhão      |
+| POST   | `/talhoes`           | Cadastrar talhão      |
+| PUT    | `/talhoes/{id}`      | Atualizar talhão      |
+| DELETE | `/talhoes/{id}`      | Excluir talhão        |
+| GET    | `/culturas`          | Listar culturas       |
+| GET    | `/culturas/{id}`     | Consultar cultura     |
+| POST   | `/culturas`          | Cadastrar cultura     |
+| PUT    | `/culturas/{id}`     | Atualizar cultura     |
+| DELETE | `/culturas/{id}`     | Excluir cultura       |
+| GET    | `/plantios`          | Listar plantios       |
+| GET    | `/plantios/{id}`     | Consultar plantio     |
+| POST   | `/plantios`          | Cadastrar plantio     |
+| PUT    | `/plantios/{id}`     | Atualizar plantio     |
+| DELETE | `/plantios/{id}`     | Excluir plantio       |
+
+## Como executar
 
 ### Pré-requisitos
 
@@ -52,64 +90,65 @@ As funcionalidades poderão ser ajustadas durante a evolução do projeto.
 - Git
 - Maven Wrapper incluído no projeto
 
-### Banco de dados
+### Configuração do banco
 
-O ambiente de desenvolvimento utiliza um banco MySQL denominado `gestao_agricola`.
+Crie um banco de dados MySQL:
 
-A aplicação utiliza o usuário `gestao_app`, com permissões específicas sobre o banco.
+```sql
+CREATE DATABASE IF NOT EXISTS gestao_agricola;
+```
 
-As credenciais não são armazenadas diretamente no código-fonte.
+Configure o usuário e suas permissões para acessar esse banco.
+
+O arquivo `application.properties` utiliza:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/gestao_agricola
+spring.datasource.username=gestao_app
+spring.datasource.password=${DB_PASSWORD}
+```
+
+Ajuste o usuário e a URL conforme seu ambiente.
 
 ### Variável de ambiente
 
-A senha do banco de dados é fornecida por meio da variável `DB_PASSWORD`.
-
-No PowerShell, a variável pode ser definida para a sessão atual com:
+No PowerShell:
 
 ```powershell
 $env:DB_PASSWORD = Read-Host "Digite a senha do banco"
 ```
 
-### Execução do backend
+### Inicialização
 
-Após configurar o banco e a variável de ambiente, a aplicação pode ser iniciada no Windows com:
+Na pasta `backend`, execute:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-Por padrão, o servidor HTTP utiliza a porta `8080`.
+A aplicação ficará disponível em:
 
-**Observação:** a aplicação ainda não possui endpoints de negócio. Portanto, uma resposta HTTP 404 na rota principal é esperada nesta etapa.
+`http://localhost:8080`
 
-## Estrutura inicial
+Exemplo de consulta:
 
-```text
-backend/
-├── .mvn/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   └── test/
-├── .gitignore
-├── mvnw
-├── mvnw.cmd
-└── pom.xml
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/propriedades" -Method GET
 ```
 
-## Próximas etapas
+## Validação e testes
 
-1. Definição das entidades do domínio agrícola.
-2. Implementação da camada de persistência.
-3. Implementação das regras de negócio.
-4. Desenvolvimento dos endpoints REST.
-5. Criação de testes automatizados.
-6. Integração futura com uma interface frontend.
+Os endpoints foram exercitados manualmente por meio de requisições HTTP no PowerShell.
 
-## Finalidade
+Foram verificados cenários de cadastro, consulta, atualização, exclusão, validações de dados e proteção de relacionamentos.
 
-O projeto possui finalidade educacional e busca demonstrar a aplicação prática de tecnologias utilizadas no desenvolvimento de sistemas corporativos.
+A suíte de testes automatizados ainda não foi concluída.
+
+## Estado do projeto
+
+**Backend funcional — versão inicial em revisão final.**
+
+As principais funcionalidades previstas para o escopo inicial estão implementadas. O projeto permanece aberto a melhorias de testes, documentação e manutenção.
 
 ## Autor
 
